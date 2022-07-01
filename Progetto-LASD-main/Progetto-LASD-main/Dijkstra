@@ -1,0 +1,86 @@
+//Seleziona un nodo con l'occorrenza minore per essere inserito nell'array visistati[] ogni volta
+int Choose(int *occorrenze, int *visitati, int n) 
+{
+    int i,minpos,min;
+    min= INT_MAX;
+    minpos=-1;
+    for(i=0;i<n;i++)
+    {
+        if(occorrenze[i] < min && !visitati[i])
+        {
+            min=occorrenze[i];
+            minpos=i;
+        }
+    }
+    return minpos;
+}
+
+bool isEmptyAdj(edge adj){
+    return(adj == NULL);
+}
+
+int Dijkstra(int src, int *occorrenze, int *path, grafo lg)
+{
+    int i,k;
+    edge aux_edge;
+    int *visitati;  //array di interi
+
+    //controlla se la lista di adiacenza della sorgente sia vuota o meno
+    if(isEmptyAdj(lg->adj[src]))
+        return 0;
+
+
+    aux_edge = lg->adj[src];    
+
+    assert( !(src<0||src>lg->nv-1), "ERRORE");
+
+    visitati=(int*)malloc(sizeof(int) * lg->nv);           //alloca memoria per l'array di interi
+    assert(visitati != NULL, "errore allocazione memoria");
+
+    //INIZIALIZZA I VETTORI
+    for(i=0;i<lg->nv ;i++)
+    {
+        visitati[i]=0;
+        path[i]=-1;
+        occorrenze[i]=INT_MAX;
+    }
+
+    while(aux_edge != NULL){
+        occorrenze[aux_edge->key ]= 1;
+        if(aux_edge->key != src && occorrenze[aux_edge->key ] < INT_MAX)
+            path[aux_edge->key ]=src;
+
+        aux_edge=aux_edge->next;
+    }
+
+
+    visitati[src]=1; // array dei colori
+    occorrenze[src]=0; // array con conteggio dei nodi su cui si passa
+
+    //DOPO AVER SCORSO LA LISTA DI ADIACENZA DELLA SORGENTE, FA IL RESTO DEI CONTROLLI
+
+    for(i=1;i<lg->nv ;i++)
+    {
+        k=Choose(occorrenze, visitati, lg->nv );
+        if(k==-1)
+            continue;
+
+        //Determina se un nodo valido e' selezionato
+        visitati[k]=1;
+        aux_edge=lg->adj[k];
+        if(aux_edge == NULL)
+            continue ;
+
+        while(aux_edge)
+        {
+            if (!visitati[aux_edge->key] && occorrenze[k] + 1 < occorrenze[aux_edge->key]){ //Aggiorna occorrenze e path
+                occorrenze[aux_edge->key] = occorrenze[k] + 1;
+                path[aux_edge->key] = k;
+            }
+            aux_edge = aux_edge->next;
+        }
+    }
+    return 1;
+}
+
+
